@@ -1,0 +1,13 @@
+use_frameworks!
+
+platform :ios, '10.0'
+
+target 'SDWebImageJPEGXLCoder_Example' do
+  pod 'SDWebImageJPEGXLCoder', :path => '../'
+
+  target 'SDWebImageJPEGXLCoder_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
