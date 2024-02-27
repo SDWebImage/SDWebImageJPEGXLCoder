@@ -1,13 +1,11 @@
-use_frameworks!
+#use_frameworks! :linkage => :static
+install! "cocoapods",
+         :generate_multiple_pod_projects => true
 
 platform :ios, '10.0'
 
 target 'SDWebImageJPEGXLCoder_Example' do
   pod 'SDWebImageJPEGXLCoder', :path => '../'
-
-  target 'SDWebImageJPEGXLCoder_Tests' do
-    inherit! :search_paths
-
-    
-  end
+  pod 'libjxl', :path => '../../libjxl-Xcode'
+  # pod 'libjxl', :git => 'git@github.com:SDWebImage/libjxl-Xcode.git', :branch => 'master', :submodules => true
 end
