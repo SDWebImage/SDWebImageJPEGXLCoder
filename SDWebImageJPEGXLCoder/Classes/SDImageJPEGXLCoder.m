@@ -177,7 +177,8 @@ static CGSize SDCalculateThumbnailSize(CGSize fullSize, BOOL preserveAspectRatio
     JxlBasicInfo info;
     status = JxlDecoderGetBasicInfo(dec, &info);
     if (status != JXL_DEC_SUCCESS) return nil;
-    CGImagePropertyOrientation exifOrientation = (CGImagePropertyOrientation)info.orientation;
+    // By defaults, libjxl applys transform for orientation, unless we call `JxlDecoderSetKeepOrientation`
+//    CGImagePropertyOrientation exifOrientation = (CGImagePropertyOrientation)info.orientation;
     
     // colorspace
     size_t profileSize;
@@ -212,10 +213,9 @@ static CGSize SDCalculateThumbnailSize(CGSize fullSize, BOOL preserveAspectRatio
             return nil;
         }
 #if SD_MAC
-        UIImage *image = [[UIImage alloc] initWithCGImage:imageRef scale:scale orientation:exifOrientation];
+        UIImage *image = [[UIImage alloc] initWithCGImage:imageRef scale:scale orientation:kCGImagePropertyOrientationUp];
 #else
-        UIImageOrientation orientation = [SDImageCoderHelper imageOrientationFromEXIFOrientation:exifOrientation];
-        UIImage *image = [[UIImage alloc] initWithCGImage:imageRef scale:scale orientation:orientation];
+        UIImage *image = [[UIImage alloc] initWithCGImage:imageRef scale:scale orientation:UIImageOrientationUp];
 #endif
         CGImageRelease(imageRef);
         
@@ -237,10 +237,9 @@ static CGSize SDCalculateThumbnailSize(CGSize fullSize, BOOL preserveAspectRatio
             CGImageRef imageRef = [self sd_createJXLImageWithDec:dec info:info colorSpace:colorSpaceRef thumbnailSize:thumbnailSize preserveAspectRatio:preserveAspectRatio];
             if (!imageRef) continue;
 #if SD_MAC
-            UIImage *image = [[UIImage alloc] initWithCGImage:imageRef scale:scale orientation:exifOrientation];
+            UIImage *image = [[UIImage alloc] initWithCGImage:imageRef scale:scale orientation:kCGImagePropertyOrientationUp];
 #else
-            UIImageOrientation orientation = [SDImageCoderHelper imageOrientationFromEXIFOrientation:exifOrientation];
-            UIImage *image = [[UIImage alloc] initWithCGImage:imageRef scale:scale orientation:orientation];
+            UIImage *image = [[UIImage alloc] initWithCGImage:imageRef scale:scale orientation:UIImageOrientationUp];
 #endif
             CGImageRelease(imageRef);
             
