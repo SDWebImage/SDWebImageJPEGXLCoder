@@ -34,6 +34,6 @@ A SDWebImage coder plugin to support JPEG-XL image
 
   s.source_files = 'SDWebImageJPEGXLCoder/Classes/**/*'
   
-  s.dependency 'SDWebImage', "~> 5.12"
-  s.dependency 'libjxl'
+  s.dependency 'SDWebImage', "~> 5.17"
+  s.dependency 'libjxl', "~> 0.10"
 end

@@ -1,0 +1,6 @@
+framework module SDWebImageJPEGXLCoder {
+  umbrella header "SDWebImageJPEGXLCoder.h"
+
+  export *
+  module * { export * }
+}

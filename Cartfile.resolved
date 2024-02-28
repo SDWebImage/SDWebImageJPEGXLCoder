@@ -1,0 +1,2 @@
+github "SDWebImage/SDWebImage" "5.19.0"
+github "SDWebImage/libjxl-Xcode" "0.10.0"

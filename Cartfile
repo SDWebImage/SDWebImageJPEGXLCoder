@@ -1,2 +1,2 @@
-github "SDWebImage/SDWebImage" ~> 5.12
-github "SDWebImage/libjxl-Xcode"
+github "SDWebImage/SDWebImage" ~> 5.17
+github "SDWebImage/libjxl-Xcode" ~> 0.10

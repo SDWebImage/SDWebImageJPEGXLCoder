@@ -1,0 +1,25 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "libjxl",
+        "repositoryURL": "https://github.com/SDWebImage/libjxl-Xcode.git",
+        "state": {
+          "branch": null,
+          "revision": "db79a9680b5301e798222ec7ef67775d7424219a",
+          "version": "0.10.0"
+        }
+      },
+      {
+        "package": "SDWebImage",
+        "repositoryURL": "https://github.com/SDWebImage/SDWebImage.git",
+        "state": {
+          "branch": null,
+          "revision": "73b9397cfbd902f606572964055464903b1d84c6",
+          "version": "5.19.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
