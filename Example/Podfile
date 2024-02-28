@@ -6,6 +6,5 @@ platform :ios, '10.0'
 
 target 'SDWebImageJPEGXLCoder_Example' do
   pod 'SDWebImageJPEGXLCoder', :path => '../'
-  pod 'libjxl', :path => '../../libjxl-Xcode'
-  # pod 'libjxl', :git => 'git@github.com:SDWebImage/libjxl-Xcode.git', :branch => 'master', :submodules => true
+  pod 'libjxl'
 end

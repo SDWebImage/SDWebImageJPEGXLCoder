@@ -7,23 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		320EB3252B8F49BD00C466C8 /* jxl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 320EB3242B8F49BD00C466C8 /* jxl.framework */; platformFilters = (macos, ); };
-		325FD3C82B8F440900DCAD9A /* SDWebImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 325FD3C62B8F440900DCAD9A /* SDWebImage.framework */; platformFilters = (macos, ); };
 		325FD3CD2B8F446A00DCAD9A /* SDWebImageJPEGXLCoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 325FD3CB2B8F446A00DCAD9A /* SDWebImageJPEGXLCoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		326AA2462B8F272500B7D7B4 /* SDImageJPEGXLCoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 326AA2412B8F272500B7D7B4 /* SDImageJPEGXLCoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		326AA2482B8F272500B7D7B4 /* SDImageJPEGXLCoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 326AA2432B8F272500B7D7B4 /* SDImageJPEGXLCoder.m */; };
+		32A429D72B8F9B6100327685 /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32A429D62B8F9B6100327685 /* jxl.xcframework */; };
+		32A429D92B8F9B6800327685 /* SDWebImage.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32A429D82B8F9B6800327685 /* SDWebImage.xcframework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		320EB3242B8F49BD00C466C8 /* jxl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = jxl.framework; path = Carthage/Build/Mac/jxl.framework; sourceTree = "<group>"; };
-		325FD3C52B8F440900DCAD9A /* libjxl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libjxl.framework; path = Carthage/Build/Mac/libjxl.framework; sourceTree = "<group>"; };
-		325FD3C62B8F440900DCAD9A /* SDWebImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDWebImage.framework; path = Carthage/Build/Mac/SDWebImage.framework; sourceTree = "<group>"; };
 		325FD3CA2B8F446A00DCAD9A /* SDWebImageJPEGXLCoder.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = SDWebImageJPEGXLCoder.modulemap; sourceTree = "<group>"; };
 		325FD3CB2B8F446A00DCAD9A /* SDWebImageJPEGXLCoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDWebImageJPEGXLCoder.h; sourceTree = "<group>"; };
 		325FD3CC2B8F446A00DCAD9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		326AA2352B8F26F000B7D7B4 /* SDWebImageJPEGXLCoder.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SDWebImageJPEGXLCoder.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		326AA2412B8F272500B7D7B4 /* SDImageJPEGXLCoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDImageJPEGXLCoder.h; sourceTree = "<group>"; };
 		326AA2432B8F272500B7D7B4 /* SDImageJPEGXLCoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDImageJPEGXLCoder.m; sourceTree = "<group>"; };
+		32A429D62B8F9B6100327685 /* jxl.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = jxl.xcframework; path = Carthage/Build/jxl.xcframework; sourceTree = "<group>"; };
+		32A429D82B8F9B6800327685 /* SDWebImage.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDWebImage.xcframework; path = Carthage/Build/SDWebImage.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,8 +30,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				320EB3252B8F49BD00C466C8 /* jxl.framework in Frameworks */,
-				325FD3C82B8F440900DCAD9A /* SDWebImage.framework in Frameworks */,
+				32A429D92B8F9B6800327685 /* SDWebImage.xcframework in Frameworks */,
+				32A429D72B8F9B6100327685 /* jxl.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -42,9 +41,8 @@
 		325FD3C42B8F440800DCAD9A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				320EB3242B8F49BD00C466C8 /* jxl.framework */,
-				325FD3C52B8F440900DCAD9A /* libjxl.framework */,
-				325FD3C62B8F440900DCAD9A /* SDWebImage.framework */,
+				32A429D82B8F9B6800327685 /* SDWebImage.xcframework */,
+				32A429D62B8F9B6100327685 /* jxl.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -312,10 +310,6 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/Mac",
-				);
 				INFOPLIST_FILE = "$(PROJECT_DIR)/SDWebImageJPEGXLCoder/Module/Info.plist";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -354,10 +348,6 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/Mac",
-				);
 				INFOPLIST_FILE = "$(PROJECT_DIR)/SDWebImageJPEGXLCoder/Module/Info.plist";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";

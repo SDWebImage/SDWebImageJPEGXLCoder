@@ -12,7 +12,7 @@ See: [Why JPEG-XL](https://jpegxl.info/why-jxl.html)
 
 This coder supports the HDR/SDR decoding, as well as JPEG-XL aniamted image.
 
-## TODO
+## Notes
 
 1. This coder supports animation via UIImageView/NSImageView, no SDAnimatedImageView currently (Because the current coder API need codec supports non-sequential frame decoding, but libjxl does not have. Will remove this limit in SDWebImage 6.0)
 2. This coder does not supports JPEG-XL encoding (Because I have no time :))
@@ -43,6 +43,8 @@ SDWebImageJPEGXLCoder is available through [Carthage](https://github.com/Carthag
 ```
 github "SDWebImage/SDWebImageJPEGXLCoder"
 ```
+
+Note: You must use `carthage build --use-xcframeworks` for integration (because it supports 5 Apple platforms. You can limit platforms you need by using `--platform iOS,visionOS`)
 
 #### Swift Package Manager
 
