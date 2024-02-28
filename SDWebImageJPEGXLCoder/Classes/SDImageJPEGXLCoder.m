@@ -31,38 +31,6 @@ static void FreeImageData(void *info, const void *data, size_t size) {
     free((void *)data);
 }
 
-/// Calculate the actual thumnail pixel size
-static CGSize SDCalculateThumbnailSize(CGSize fullSize, BOOL preserveAspectRatio, CGSize thumbnailSize) {
-    CGFloat width = fullSize.width;
-    CGFloat height = fullSize.height;
-    CGFloat resultWidth;
-    CGFloat resultHeight;
-    
-    if (width == 0 || height == 0 || thumbnailSize.width == 0 || thumbnailSize.height == 0 || (width <= thumbnailSize.width && height <= thumbnailSize.height)) {
-        // Full Pixel
-        resultWidth = width;
-        resultHeight = height;
-    } else {
-        // Thumbnail
-        if (preserveAspectRatio) {
-            CGFloat pixelRatio = width / height;
-            CGFloat thumbnailRatio = thumbnailSize.width / thumbnailSize.height;
-            if (pixelRatio > thumbnailRatio) {
-                resultWidth = thumbnailSize.width;
-                resultHeight = ceil(thumbnailSize.width / pixelRatio);
-            } else {
-                resultHeight = thumbnailSize.height;
-                resultWidth = ceil(thumbnailSize.height * pixelRatio);
-            }
-        } else {
-            resultWidth = thumbnailSize.width;
-            resultHeight = thumbnailSize.height;
-        }
-    }
-    
-    return CGSizeMake(resultWidth, resultHeight);
-}
-
 @implementation SDImageJPEGXLCoder
 
 + (instancetype)sharedCoder {
@@ -334,12 +302,19 @@ static CGSize SDCalculateThumbnailSize(CGSize fullSize, BOOL preserveAspectRatio
     CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, buffer, bufferSize, FreeImageData);
     CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
     BOOL shouldInterpolate = YES;
-    CGImageRef imageRef = CGImageCreate(width, height, bitsPerComponent, bitsPerPixel, bytesPerRow, colorSpace, bitmapInfo, provider, NULL, shouldInterpolate, renderingIntent);
+    CGImageRef originImageRef = CGImageCreate(width, height, bitsPerComponent, bitsPerPixel, bytesPerRow, colorSpace, bitmapInfo, provider, NULL, shouldInterpolate, renderingIntent);
     CGDataProviderRelease(provider);
     
-    if (!imageRef) {
+    if (!originImageRef) {
         return nil;
     }
+    // TODO: In SDWebImage 6.0 API, coder can choose `whether I supports thumbnail decoding`
+    // if return false, we provide a common implementation `after the full image is decoded`
+    // do not repeat code in each coder plugin repo :(
+    CGSize scaledSize = [SDImageCoderHelper scaledSizeWithImageSize:CGSizeMake(width, height) scaleSize:thumbnailSize preserveAspectRatio:preserveAspectRatio shouldScaleUp:NO];
+    CGImageRef imageRef = [SDImageCoderHelper CGImageCreateScaled:originImageRef size:scaledSize];
+    CGImageRelease(originImageRef);
+    
     return imageRef;
 }
 
