@@ -12,7 +12,7 @@
 
 @interface SDViewController ()
 @property (nonatomic, strong) UIImageView *imageView1;
-@property (nonatomic, strong) SDAnimatedImageView *imageView2;
+@property (nonatomic, strong) UIImageView *imageView2;
 
 @end
 
@@ -22,7 +22,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    [SDImageCache.sharedImageCache clearDiskOnCompletion:nil];
+    [SDImageCache.sharedImageCache.diskCache removeAllData];
     
     [[SDImageCodersManager sharedManager] addCoder:[SDImageJPEGXLCoder sharedCoder]];
     
@@ -30,7 +30,7 @@
     self.imageView1.contentMode = UIViewContentModeScaleAspectFit;
     [self.view addSubview:self.imageView1];
     
-    self.imageView2 = [SDAnimatedImageView new];
+    self.imageView2 = [UIImageView new];
     self.imageView2.contentMode = UIViewContentModeScaleAspectFit;
     [self.view addSubview:self.imageView2];
     
@@ -41,15 +41,16 @@
         if (image) {
             NSLog(@"%@", @"Static JPEG-XL load success");
         }
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            NSUInteger maxFileSize = 4096;
-            NSData *jxlData = [SDImageJPEGXLCoder.sharedCoder encodedDataWithImage:image format:SDImageFormatJPEGXL options:@{SDImageCoderEncodeMaxFileSize : @(maxFileSize)}];
-            if (jxlData) {
-                NSLog(@"%@", @"JPEG-XL encoding success");
-            }
-        });
+        // TODO, JXL encoding
+//        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//            NSUInteger maxFileSize = 4096;
+//            NSData *jxlData = [SDImageJPEGXLCoder.sharedCoder encodedDataWithImage:image format:SDImageFormatJPEGXL options:@{SDImageCoderEncodeMaxFileSize : @(maxFileSize)}];
+//            if (jxlData) {
+//                NSLog(@"%@", @"JPEG-XL encoding success");
+//            }
+//        });
     }];
-    [self.imageView2 sd_setImageWithURL:animatedURL placeholderImage:nil options:SDWebImageProgressiveLoad completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
+    [self.imageView2 sd_setImageWithURL:animatedURL placeholderImage:nil completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
         if (image) {
             NSLog(@"%@", @"Animated JPEG-XL load success");
         }

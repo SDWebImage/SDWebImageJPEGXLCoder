@@ -14,8 +14,18 @@
 @import libjxl;
 #endif
 
-#define SD_TWO_CC(c1,c2) ((uint16_t)(((c2) << 8) | (c1)))
-#define SD_FOUR_CC(c1,c2,c3,c4) ((uint32_t)(((c4) << 24) | ((c3) << 16) | ((c2) << 8) | (c1)))
+typedef void (^sd_cleanupBlock_t)(void);
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+    void sd_executeCleanupBlock (__strong sd_cleanupBlock_t *block);
+#if defined(__cplusplus)
+}
+#endif
+
+//#define SD_TWO_CC(c1,c2) ((uint16_t)(((c2) << 8) | (c1)))
+//#define SD_FOUR_CC(c1,c2,c3,c4) ((uint32_t)(((c4) << 24) | ((c3) << 16) | ((c2) << 8) | (c1)))
 
 static void FreeImageData(void *info, const void *data, size_t size) {
     free((void *)data);
@@ -108,6 +118,7 @@ static CGSize SDCalculateThumbnailSize(CGSize fullSize, BOOL preserveAspectRatio
     if (!data) {
         return nil;
     }
+    BOOL decodeFirstFrame = [options[SDImageCoderDecodeFirstFrameOnly] boolValue];
     CGFloat scale = 1;
     if ([options valueForKey:SDImageCoderDecodeScaleFactor]) {
         scale = [[options valueForKey:SDImageCoderDecodeScaleFactor] doubleValue];
@@ -132,25 +143,20 @@ static CGSize SDCalculateThumbnailSize(CGSize fullSize, BOOL preserveAspectRatio
         preserveAspectRatio = preserveAspectRatioValue.boolValue;
     }
     
-    CGImageRef imageRef = [self sd_createJXLImageWithData:data thumbnailSize:thumbnailSize preserveAspectRatio:preserveAspectRatio];
-    if (!imageRef) {
-        return nil;
-    }
+    // cleanup
+    __block JxlDecoder *dec;
+    __block CGColorSpaceRef colorSpaceRef;
+    __strong void(^cleanupBlock)(void) __attribute__((cleanup(sd_executeCleanupBlock), unused)) = ^{
+        if (colorSpaceRef) {
+            CGColorSpaceRelease(colorSpaceRef);
+        }
+        if (dec) {
+            JxlDecoderDestroy(dec);
+        }
+    };
     
-#if SD_MAC
-    UIImage *image = [[UIImage alloc] initWithCGImage:imageRef scale:scale orientation:kCGImagePropertyOrientationUp];
-#else
-    UIImage *image = [[UIImage alloc] initWithCGImage:imageRef scale:scale orientation:UIImageOrientationUp];
-#endif
-    CGImageRelease(imageRef);
-    
-    return image;
-}
-
-- (nullable CGImageRef)sd_createJXLImageWithData:(NSData *)data thumbnailSize:(CGSize)thumbnailSize preserveAspectRatio:(BOOL)preserveAspectRatio CF_RETURNS_RETAINED {
-    // Learn example to render on screen, see: libjxl/tools/viewer/load_jxl.cc
-    
-    JxlDecoder *dec = JxlDecoderCreate(NULL);
+    // Get basic info
+    dec = JxlDecoderCreate(NULL);
     if (!dec) return nil;
     
     // feed data
@@ -160,7 +166,7 @@ static CGSize SDCalculateThumbnailSize(CGSize fullSize, BOOL preserveAspectRatio
     // note: when using `JxlDecoderSubscribeEvents` libjxl behaves likes incremental decoding
     // which need event loop to get latest status via `JxlDecoderProcessInput`
     // each status reports your next steps's info
-    status = JxlDecoderSubscribeEvents(dec, JXL_DEC_BASIC_INFO | JXL_DEC_COLOR_ENCODING | JXL_DEC_FULL_IMAGE);
+    status = JxlDecoderSubscribeEvents(dec, JXL_DEC_BASIC_INFO | JXL_DEC_COLOR_ENCODING | JXL_DEC_FRAME | JXL_DEC_FULL_IMAGE);
     if (status != JXL_DEC_SUCCESS) return nil;
     
     // decode it
@@ -171,9 +177,9 @@ static CGSize SDCalculateThumbnailSize(CGSize fullSize, BOOL preserveAspectRatio
     JxlBasicInfo info;
     status = JxlDecoderGetBasicInfo(dec, &info);
     if (status != JXL_DEC_SUCCESS) return nil;
+    CGImagePropertyOrientation exifOrientation = (CGImagePropertyOrientation)info.orientation;
     
     // colorspace
-    CGColorSpaceRef colorSpaceRef;
     size_t profileSize;
     status = JxlDecoderProcessInput(dec);
     if (status != JXL_DEC_COLOR_ENCODING) return nil;
@@ -195,6 +201,76 @@ static CGSize SDCalculateThumbnailSize(CGSize fullSize, BOOL preserveAspectRatio
         colorSpaceRef = [SDImageCoderHelper colorSpaceGetDeviceRGB];
         CGColorSpaceRetain(colorSpaceRef);
     }
+    
+    // animation check
+    BOOL hasAnimation = info.have_animation;
+    if (!hasAnimation || decodeFirstFrame) {
+        status = JxlDecoderProcessInput(dec);
+        if (status != JXL_DEC_FRAME) return nil;
+        CGImageRef imageRef = [self sd_createJXLImageWithDec:dec info:info colorSpace:colorSpaceRef thumbnailSize:thumbnailSize preserveAspectRatio:preserveAspectRatio];
+        if (!imageRef) {
+            return nil;
+        }
+#if SD_MAC
+        UIImage *image = [[UIImage alloc] initWithCGImage:imageRef scale:scale orientation:exifOrientation];
+#else
+        UIImageOrientation orientation = [SDImageCoderHelper imageOrientationFromEXIFOrientation:exifOrientation];
+        UIImage *image = [[UIImage alloc] initWithCGImage:imageRef scale:scale orientation:orientation];
+#endif
+        CGImageRelease(imageRef);
+        
+        return image;
+    }
+    // loop frame
+    NSUInteger loopCount = info.animation.num_loops;
+    NSMutableArray<SDImageFrame *> *frames = [NSMutableArray array];
+    JxlFrameHeader header;
+    do {
+        @autoreleasepool {
+            status = JxlDecoderProcessInput(dec);
+            if (status != JXL_DEC_FRAME) break;
+            status = JxlDecoderGetFrameHeader(dec, &header);
+            if (status != JXL_DEC_SUCCESS) continue;
+            
+            // frame decode
+            NSTimeInterval duration = [self sd_frameDurationWithInfo:info header:header];
+            CGImageRef imageRef = [self sd_createJXLImageWithDec:dec info:info colorSpace:colorSpaceRef thumbnailSize:thumbnailSize preserveAspectRatio:preserveAspectRatio];
+            if (!imageRef) continue;
+#if SD_MAC
+            UIImage *image = [[UIImage alloc] initWithCGImage:imageRef scale:scale orientation:exifOrientation];
+#else
+            UIImageOrientation orientation = [SDImageCoderHelper imageOrientationFromEXIFOrientation:exifOrientation];
+            UIImage *image = [[UIImage alloc] initWithCGImage:imageRef scale:scale orientation:orientation];
+#endif
+            CGImageRelease(imageRef);
+            
+            // Assemble frame
+            SDImageFrame *frame = [SDImageFrame frameWithImage:image duration:duration];
+            [frames addObject:frame];
+        }
+    } while (!header.is_last);
+    
+    UIImage *animatedImage = [SDImageCoderHelper animatedImageWithFrames:frames];
+    animatedImage.sd_imageLoopCount = loopCount;
+    animatedImage.sd_imageFormat = SDImageFormatJPEGXL;
+    
+    return animatedImage;
+}
+
+- (NSTimeInterval)sd_frameDurationWithInfo:(JxlBasicInfo)info header:(JxlFrameHeader)header {
+    // Calculate duration, this is `tick`
+    // We need tps (tick per second) to calculate
+    NSTimeInterval duration = (double)header.duration * info.animation.tps_denominator / info.animation.tps_numerator;
+    if (duration < 0.1) {
+        // Should we still try to keep broswer behavior to limit 100ms ?
+        // Like GIF/WebP ?
+        return 0.1;
+    }
+    return duration;
+}
+
+- (nullable CGImageRef)sd_createJXLImageWithDec:(JxlDecoder *)dec info:(JxlBasicInfo)info colorSpace:(CGColorSpaceRef)colorSpace thumbnailSize:(CGSize)thumbnailSize preserveAspectRatio:(BOOL)preserveAspectRatio CF_RETURNS_RETAINED {
+    JxlDecoderStatus status;
     
     // bitmap format
     BOOL hasAlpha = info.alpha_bits != 0;
@@ -255,13 +331,13 @@ static CGSize SDCalculateThumbnailSize(CGSize fullSize, BOOL preserveAspectRatio
     status = JxlDecoderProcessInput(dec);
     if (status != JXL_DEC_FULL_IMAGE) return nil; // Final status
     
-    JxlDecoderDestroy(dec);
-    
     // create CGImage
     CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, buffer, bufferSize, FreeImageData);
     CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
     BOOL shouldInterpolate = YES;
-    CGImageRef imageRef = CGImageCreate(width, height, bitsPerComponent, bitsPerPixel, bytesPerRow, colorSpaceRef, bitmapInfo, provider, NULL, shouldInterpolate, renderingIntent);
+    CGImageRef imageRef = CGImageCreate(width, height, bitsPerComponent, bitsPerPixel, bytesPerRow, colorSpace, bitmapInfo, provider, NULL, shouldInterpolate, renderingIntent);
+    CGDataProviderRelease(provider);
+    
     if (!imageRef) {
         return nil;
     }

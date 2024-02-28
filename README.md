@@ -12,7 +12,11 @@ See: [Why JPEG-XL](https://jpegxl.info/why-jxl.html)
 
 This coder supports the HDR/SDR decoding, as well as JPEG-XL aniamted image.
 
-Note: Apple's ImageIO supports JPEGXL decoding from iOS 17/tvOS 17/watchOS 10/macOS 14 (via: [WWDC2023](https://developer.apple.com/videos/play/wwdc2023/10122/)), so SDWebImage on those platform can also decode JPEGXL images using `SDImageIOCoder` (but no animated JPEG-XL support)
+## TODO
+
+1. This coder supports animation via UIImageView/NSImageView, no SDAnimatedImageView currently (Because the current coder API need codec supports non-sequential frame decoding, but libjxl does not have. Will remove this limit in SDWebImage 6.0)
+2. This coder does not supports JPEG-XL encoding (Because I have no time :))
+3. Apple's ImageIO supports JPEGXL decoding from iOS 17/tvOS 17/watchOS 10/macOS 14 (via: [WWDC2023](https://developer.apple.com/videos/play/wwdc2023/10122/)), so SDWebImage on those platform can also decode JPEGXL images using `SDImageIOCoder` (but no animated JPEG-XL support)
 
 ## Requirements
 
@@ -93,6 +97,8 @@ let JPEGXLURL: URL
 let imageView: UIImageView
 imageView.sd_setImage(with: JPEGXLURL)
 ```
+
+Note: You can also test animated JPEG-XL on UIImageView/NSImageView and WebImage (via SwiftUI port)
 
 ## Example
 
